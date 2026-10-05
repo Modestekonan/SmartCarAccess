@@ -1,0 +1,10 @@
+{
+  "description": "Connect and monitor vehicles with intelligent diagnostics, secure access, real-time location, and AI-driven insights for enhanced automotive management and safety.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
