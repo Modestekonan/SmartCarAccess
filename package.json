@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:mobile": "pnpm --dir apps/mobile build",
+    "build:admin": "pnpm --dir apps/admin-web build",
+    "build:all": "pnpm build && pnpm build:mobile && pnpm build:admin",
     "preview": "vite preview",
     "format": "oxfmt"
   },

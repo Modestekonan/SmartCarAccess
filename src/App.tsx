@@ -60,7 +60,7 @@ const titles: Partial<Record<Page, string>> = {
   key: "Clé digitale",
   design: "Design System",
 }
-const carImage = "/vehicle.png"
+const carImage = `${import.meta.env.BASE_URL}vehicle.png`
 const demoEvents = [
   {
     time: "09:42",
@@ -82,9 +82,18 @@ const demoEvents = [
   },
 ]
 
-export default function App() {
-  const [page, setPage] = useState<Page>("home")
-  const [mode, setMode] = useState<"driver" | "admin">("driver")
+export type AppVariant = "showcase" | "mobile" | "admin"
+
+export default function App({
+  variant = "showcase",
+}: {
+  variant?: AppVariant
+}) {
+  const isDedicatedApp = variant !== "showcase"
+  const [page, setPage] = useState<Page>(variant === "admin" ? "admin" : "home")
+  const [mode, setMode] = useState<"driver" | "admin">(
+    variant === "admin" ? "admin" : "driver",
+  )
   const [menuOpen, setMenuOpen] = useState(false)
   const [toast, setToast] = useState("")
   const [selectedEvent, setSelectedEvent] = useState(2)
@@ -136,9 +145,14 @@ export default function App() {
     }
   }, [toast])
   useEffect(() => {
-    document.title = "SmartCar Access — Prototype CIR"
+    document.title =
+      variant === "admin"
+        ? "SmartCar Admin — Prototype CIR"
+        : variant === "mobile"
+          ? "SmartCar Mobile — Prototype CIR"
+          : "SmartCar Access — Prototype CIR"
     document.documentElement.lang = "fr"
-  }, [])
+  }, [variant])
   useEffect(() => {
     if (flow === "login") setOnboarding(0)
   }, [flow])
@@ -181,6 +195,7 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
   const changeMode = (next: "driver" | "admin") => {
+    if (isDedicatedApp) return
     setMode(next)
     go(next === "admin" ? "admin" : "home")
   }
@@ -2640,18 +2655,26 @@ export default function App() {
               <Icon name="layers" size={17} />
             </span>
             <div>
-              <strong>Le futur se construit ici.</strong>
+              <strong>
+                {variant === "admin"
+                  ? "Console d’administration"
+                  : variant === "mobile"
+                    ? "Application mobile"
+                    : "Le futur se construit ici."}
+              </strong>
               <p>Prototype de présentation CIR</p>
-              <button
-                onClick={() =>
-                  changeMode(mode === "driver" ? "admin" : "driver")
-                }
-              >
-                {mode === "driver"
-                  ? "Explorer l’administration"
-                  : "Revenir à mon véhicule"}{" "}
-                <Icon name="arrow" size={14} />
-              </button>
+              {!isDedicatedApp && (
+                <button
+                  onClick={() =>
+                    changeMode(mode === "driver" ? "admin" : "driver")
+                  }
+                >
+                  {mode === "driver"
+                    ? "Explorer l’administration"
+                    : "Revenir à mon véhicule"}{" "}
+                  <Icon name="arrow" size={14} />
+                </button>
+              )}
             </div>
           </div>
           <button className="profile-switch" onClick={() => go("profile")}>
@@ -2714,28 +2737,31 @@ export default function App() {
           </footer>
         </main>
       </div>
-      <nav className="mobile-bottom-nav">
-        {[
-          { id: "home", label: "Accueil", icon: "grid" },
-          { id: "vehicle", label: "Véhicule", icon: "car" },
-          { id: "security", label: "Sécurité", icon: "shield" },
-          { id: "ai", label: "AI", icon: "spark" },
-          { id: "profile", label: "Profil", icon: "users" },
-        ].map((n) => (
-          <button
-            key={n.id}
-            className={page === n.id ? "active" : ""}
-            onClick={() => go(n.id as Page)}
-          >
-            <Icon name={n.icon as IconName} size={21} />
-            <span>{n.label}</span>
-          </button>
-        ))}
-      </nav>
-      <aside
-        className={`presenter-console ${presenterOpen ? "open" : ""}`}
-        aria-label="Console de démonstration"
-      >
+      {mode === "driver" && (
+        <nav className="mobile-bottom-nav">
+          {[
+            { id: "home", label: "Accueil", icon: "grid" },
+            { id: "vehicle", label: "Véhicule", icon: "car" },
+            { id: "security", label: "Sécurité", icon: "shield" },
+            { id: "ai", label: "AI", icon: "spark" },
+            { id: "profile", label: "Profil", icon: "users" },
+          ].map((n) => (
+            <button
+              key={n.id}
+              className={page === n.id ? "active" : ""}
+              onClick={() => go(n.id as Page)}
+            >
+              <Icon name={n.icon as IconName} size={21} />
+              <span>{n.label}</span>
+            </button>
+          ))}
+        </nav>
+      )}
+      {variant !== "admin" && (
+        <aside
+          className={`presenter-console ${presenterOpen ? "open" : ""}`}
+          aria-label="Console de démonstration"
+        >
         {presenterOpen && (
           <div className="presenter-panel">
             <div className="presenter-head">
@@ -2800,7 +2826,8 @@ export default function App() {
             <span className="presenter-active-dot">{activeScenario}</span>
           )}
         </Button>
-      </aside>
+        </aside>
+      )}
       {toast && (
         <div className="toast" role="status">
           <Icon name="check" size={20} />
